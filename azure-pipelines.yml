@@ -1,10 +1,19 @@
 trigger:
-- main  # Simple and sufficient for most cases
+  - main  # Simplified branch trigger
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
+  # Cache npm dependencies
+  - task: Cache@2
+    inputs:
+      key: 'npm | "$(Agent.OS)" | package-lock.json'
+      path: 'node_modules'
+      restoreKeys: |
+        npm | "$(Agent.OS)"
+    displayName: Cache npm modules
+
   # Install Node.js
   - task: NodeTool@0
     inputs:
@@ -27,6 +36,12 @@ steps:
       npm test
     displayName: Run Unit Tests
 
+  # Optional: Publish test results
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Unit Tests'
+
   # Copy necessary files (including hidden files) to Artifact Staging Directory
   - script: |
       mkdir -p $(Build.ArtifactStagingDirectory)
@@ -37,6 +52,6 @@ steps:
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: 'drop' #artifact name change to as per requirement
+      artifactName: 'drop'
       publishLocation: 'Container'
     displayName: Publish Build Artifacts
