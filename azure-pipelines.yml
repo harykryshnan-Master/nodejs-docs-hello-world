@@ -1,54 +1,39 @@
+# Azure DevOps Pipeline YAML
+# Replace 'your-project-name' with your actual project name
+
 trigger:
-  - main  # Simplified branch trigger
+  main:
+    branches:
+      include:
+        - main
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-  # Cache npm dependencies
-  - task: Cache@2
-    inputs:
-      key: 'npm | "$(Agent.OS)" | package-lock.json'
-      path: 'node_modules'
-      restoreKeys: |
-        npm | "$(Agent.OS)"
-    displayName: Cache npm modules
-
-  # Install Node.js
   - task: NodeTool@0
     inputs:
       versionSpec: '20.x'
     displayName: Install Node.js
 
-  # Install dependencies and build
   - script: |
       npm install
       npm run build
     displayName: npm install and build
 
-  # Run code linting (optional, for code quality checks)
   - script: |
       npm run lint
     displayName: Run Linter
 
-  # Run tests (optional, based on your project setup)
   - script: |
       npm test
     displayName: Run Unit Tests
 
-  # Optional: Publish test results
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Unit Tests'
-
-  # Copy necessary files (including hidden files) to Artifact Staging Directory
   - script: |
       mkdir -p $(Build.ArtifactStagingDirectory)
       cp -R . $(Build.ArtifactStagingDirectory)
     displayName: Copy files to Artifact Staging Directory
 
-  # Publish build artifacts
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
