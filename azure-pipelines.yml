@@ -2,10 +2,9 @@
 # Replace 'your-project-name' with your actual project name
 
 trigger:
-  main:
-    branches:
-      include:
-        - main
+  branches:
+    include:
+      - main
 
 pool:
   vmImage: ubuntu-latest
